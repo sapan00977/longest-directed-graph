@@ -2,9 +2,11 @@ import java.util.*;
 
 class Vertex {
     long id;
+    List<Edge> edges;
 
     Vertex(long id) {
         this.id = id;
+        this.edges = new ArrayList<>();
     }
 }
 
@@ -19,58 +21,39 @@ class Edge {
 }
 
 public class LongestDirectedPathInDAG {
-    private Map<Vertex, List<Edge>> graph;
+    private static Map<Vertex, Long> cache = new HashMap<>();
 
-    LongestDirectedPathInDAG() {
-        graph = new HashMap<>();
-    }
+    public static long longestPath(Vertex vertex) {
+        if (cache.containsKey(vertex))
+            return cache.get(vertex);
 
-    public void addEdge(Vertex from, Vertex to) {
-        graph.putIfAbsent(from, new ArrayList<>());
-        graph.get(from).add(new Edge(from, to));
-    }
-
-    public int longestPath(Vertex source) {
-        Map<Vertex, Integer> memo = new HashMap<>();
-        int longestPath = 0;
-
-        for (Vertex vertex : graph.keySet()) {
-            longestPath = Math.max(longestPath, dfs(vertex, memo));
+        long maxPath = 0;
+        for (Edge edge : vertex.edges) {
+            maxPath = Math.max(maxPath, longestPath(edge.to) + 1);
         }
 
-        return longestPath;
-    }
-
-    private int dfs(Vertex source, Map<Vertex, Integer> memo) {
-        if (memo.containsKey(source)) {
-            return memo.get(source);
-        }
-
-        int longestPath = 0;
-        if (graph.containsKey(source)) {
-            for (Edge edge : graph.get(source)) {
-                longestPath = Math.max(longestPath, dfs(edge.to, memo) + 1);
-            }
-        }
-
-        memo.put(source, longestPath);
-        return longestPath;
+        cache.put(vertex, maxPath);
+        return maxPath;
     }
 
     public static void main(String[] args) {
-        LongestDirectedPathInDAG dag = new LongestDirectedPathInDAG();
-
         Vertex v1 = new Vertex(1);
         Vertex v2 = new Vertex(2);
         Vertex v3 = new Vertex(3);
         Vertex v4 = new Vertex(4);
+        Vertex v5 = new Vertex(5);
 
-        dag.addEdge(v1, v2);
-        dag.addEdge(v1, v3);
-        dag.addEdge(v2, v3);
-        dag.addEdge(v2, v4);
-        dag.addEdge(v3, v4);
+        v1.edges.add(new Edge(v1, v2));
+        v1.edges.add(new Edge(v1, v3));
+        v2.edges.add(new Edge(v2, v3));
+        v2.edges.add(new Edge(v2, v4));
+        v3.edges.add(new Edge(v3, v4));
+        v4.edges.add(new Edge(v4, v5));
 
-        System.out.println("Longest path starting from v1: " + dag.longestPath(v1));
+        System.out.println("Longest path from vertex 1: " + longestPath(v1));
+        System.out.println("Longest path from vertex 2: " + longestPath(v2));
+        System.out.println("Longest path from vertex 3: " + longestPath(v3));
+        System.out.println("Longest path from vertex 4: " + longestPath(v4));
+        System.out.println("Longest path from vertex 5: " + longestPath(v5));
     }
 }
